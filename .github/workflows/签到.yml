@@ -36,7 +36,40 @@ jobs:
           USERINFO: ${{ secrets.USERINFO }}
           PAT: ${{ secrets.PAT }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          # 默认仅在失败时通知；设为 true 可恢复每日成功通知
+          NOTIFY_ON_SUCCESS: ${{ vars.NOTIFY_ON_SUCCESS }}
           # 通知渠道（按需配置，全部可选）
+          WECOM_BOT_KEY: ${{ secrets.WECOM_BOT_KEY }}
+          DINGTALK_BOT_KEY: ${{ secrets.DINGTALK_BOT_KEY }}
+          DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+          FEISHU_BOT_KEY: ${{ secrets.FEISHU_BOT_KEY }}
+          YUNHU_BOT_KEY: ${{ secrets.YUNHU_BOT_KEY }}
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          BARK_KEY: ${{ secrets.BARK_KEY }}
+          BARK_GROUP: ${{ secrets.BARK_GROUP }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+      # 兜底：main.js 崩溃/超时/依赖失败时仍能发出失败通知
+      - name: 失败通知兜底
+        if: ${{ failure() }}
+        run: node failNotify.js
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
           WECOM_BOT_KEY: ${{ secrets.WECOM_BOT_KEY }}
           DINGTALK_BOT_KEY: ${{ secrets.DINGTALK_BOT_KEY }}
           DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}

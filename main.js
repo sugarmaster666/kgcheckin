@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import { printBlue, printGreen, printMagenta, printRed, printYellow } from "./utils/colorOut.js";
 import { hasSecretWriteToken, setRepoSecret } from "./utils/githubSecrets.js";
 import { maskDisplayName, maskIdentifier, sanitizeForLog, summarizeResponse } from "./utils/safeLog.js";
@@ -200,11 +201,22 @@ async function main() {
     }
   }
 
-  // 发送通知（确保即使 secret 更新失败也能发出）
-  try {
-    await sendNotify(title, content)
-  } catch (e) {
-    printYellow(`通知发送异常: ${e.message}`)
+  // 仅在失败/异常时发送通知；成功时保持静默（由 NOTIFY_ON_SUCCESS=true 可恢复每日通知）
+  const notifyOnSuccess = String(process.env.NOTIFY_ON_SUCCESS || '').trim().toLowerCase() === 'true'
+  const shouldNotify = hasError || secretError !== null || notifyOnSuccess
+
+  if (shouldNotify) {
+    try {
+      const result = await sendNotify(title, content)
+      // 标记已通知，避免工作流失败兜底步骤重复发一封
+      if (result && result.success > 0) {
+        try { writeFileSync('.notify-sent', String(Date.now())) } catch { /* 忽略标记失败 */ }
+      }
+    } catch (e) {
+      printYellow(`通知发送异常: ${e.message}`)
+    }
+  } else {
+    printYellow('本次签到成功，已按配置跳过通知（仅失败时通知）')
   }
 
   if (Object.keys(errorMsg).length > 0) {

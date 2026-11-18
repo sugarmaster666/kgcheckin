@@ -386,7 +386,7 @@ async function sendNotify(title, content) {
   }
 
   if (channels.length === 0) {
-    return
+    return { configured: 0, success: 0, fail: 0 }
   }
 
   printYellow(`正在发送通知到 ${channels.length} 个渠道...`)
@@ -409,6 +409,7 @@ async function sendNotify(title, content) {
     }
   }
   printYellow(`通知发送完成: ${success} 成功, ${fail} 失败`)
+  return { configured: channels.length, success, fail }
 }
 
 export { sendNotify }
